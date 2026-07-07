@@ -12,7 +12,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: ["3.2", "3.3", "3.4"]
+        ruby: ["3.2", "3.3", "3.4", "ruby-head"]
+
+    # ruby-head is the dev trunk (future 3.5/4.x); allow it to break without failing CI.
+    continue-on-error: ${{ matrix.ruby == 'ruby-head' }}
 
     steps:
       - uses: actions/checkout@v4
