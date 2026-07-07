@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+
+      - name: Verify tag matches gem version
+        run: |
+          gem_version="v$(ruby -r ./lib/channex/version.rb -e 'print Channex::VERSION')"
+          tag="${GITHUB_REF_NAME}"
+          if [ "$gem_version" != "$tag" ]; then
+            echo "Tag $tag does not match gem version $gem_version" >&2
+            exit 1
+          fi
+
+      - name: Run tests
+        run: bundle exec rake test
+
+      - name: Build gem
+        run: gem build channex.gemspec
+
+      - name: Push to GitHub Packages
+        env:
+          GEM_HOST_API_KEY: "Bearer ${{ secrets.GITHUB_TOKEN }}"
+        run: |
+          gem push \
+            --host https://rubygems.pkg.github.com/servos-app \
+            channex-*.gem
