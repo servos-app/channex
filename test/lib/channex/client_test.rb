@@ -72,6 +72,7 @@ class Channex::ClientTest < ActiveSupport::TestCase
     assert_same client.facilities, client.facilities
     assert_same client.messages, client.messages
     assert_same client.message_threads, client.message_threads
+    assert_same client.attachments, client.attachments
     assert_same client.hotel_policies, client.hotel_policies
     assert_same client.availability_rules, client.availability_rules
   end
@@ -97,6 +98,7 @@ class Channex::ClientTest < ActiveSupport::TestCase
     assert_instance_of Channex::Resources::Facilities, client.facilities
     assert_instance_of Channex::Resources::Messages, client.messages
     assert_instance_of Channex::Resources::MessageThreads, client.message_threads
+    assert_instance_of Channex::Resources::Attachments, client.attachments
     assert_instance_of Channex::Resources::HotelPolicies, client.hotel_policies
     assert_instance_of Channex::Resources::AvailabilityRules, client.availability_rules
   end

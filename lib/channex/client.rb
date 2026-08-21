@@ -101,6 +101,10 @@ module Channex
       @message_threads ||= Resources::MessageThreads.new(self)
     end
 
+    def attachments
+      @attachments ||= Resources::Attachments.new(self)
+    end
+
     def hotel_policies
       @hotel_policies ||= Resources::HotelPolicies.new(self)
     end
