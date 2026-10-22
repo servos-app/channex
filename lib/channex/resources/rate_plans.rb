@@ -20,27 +20,14 @@ module Channex
     # @see https://docs.channex.io/api-v.1-documentation/rate-plans-collection
     #
     class RatePlans < Resource
-      # List rate plans with optional filtering
-      #
-      # @param property_id [String] Filter by property UUID
-      # @param room_type_id [String] Filter by room type UUID
-      # @param options [Hash] Additional options
-      # @return [Response]
-      def list(property_id: nil, room_type_id: nil, **options)
-        filter = options.delete(:filter) || {}
-        filter[:property_id] = property_id if property_id
-        filter[:room_type_id] = room_type_id if room_type_id
-        super(filter: filter, **options)
-      end
-
       protected
 
       def resource_path
         "/rate_plans"
       end
 
-      def resource_name
-        "rate_plan"
+      def filter_keys
+        %i[property_id room_type_id]
       end
     end
   end

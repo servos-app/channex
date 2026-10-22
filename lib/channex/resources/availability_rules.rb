@@ -38,61 +38,14 @@ module Channex
       # Days of week
       DAYS = %w[mo tu we th fr sa su].freeze
 
-      # List availability rules with optional filtering
-      #
-      # @param property_id [String] Filter by property UUID
-      # @param options [Hash] Additional options
-      # @return [Response]
-      def list(property_id: nil, **options)
-        filter = options.delete(:filter) || {}
-        filter[:property_id] = property_id if property_id
-        super(filter: filter, **options)
-      end
-
-      # Create a new availability rule
-      #
-      # @param attributes [Hash] Availability rule attributes
-      #   - property_id [String] Property UUID (required)
-      #   - affected_channels [Array<String>] Channel UUIDs to affect (required)
-      #   - affected_room_types [Array<String>] Room Type UUIDs to affect (required)
-      #   - type [String] Rule type (required): "close_out", "availability_offset", "max_availability"
-      #   - start_date [String] Start date in YYYY-MM-DD format (required)
-      #   - end_date [String] End date in YYYY-MM-DD format (optional, nil = indefinite)
-      #   - value [Integer] Value for offset/max rules (required for non-close_out types)
-      #   - days [Array<String>] Days to apply: "mo", "tu", "we", "th", "fr", "sa", "su" (optional)
-      # @return [Response]
-      #
-      # @example Close out weekends for an OTA
-      #   client.availability_rules.create(
-      #     property_id: "property-uuid",
-      #     affected_channels: ["booking-com-channel-uuid"],
-      #     affected_room_types: ["deluxe-room-uuid"],
-      #     type: "close_out",
-      #     start_date: "2024-01-01",
-      #     end_date: "2024-12-31",
-      #     days: ["sa", "su"]
-      #   )
-      def create(attributes)
-        client.post(resource_path, body: {availability_rule: attributes})
-      end
-
-      # Update an availability rule
-      #
-      # @param id [String] Availability Rule UUID
-      # @param attributes [Hash] Availability rule attributes to update
-      # @return [Response]
-      def update(id, attributes)
-        client.put("#{resource_path}/#{id}", body: {availability_rule: attributes})
-      end
-
       protected
 
       def resource_path
         "/availability_rules"
       end
 
-      def resource_name
-        "availability_rule"
+      def filter_keys
+        %i[property_id]
       end
     end
   end

@@ -139,14 +139,10 @@ module Channex
     end
 
     # @return [Array<String>] All keys in the data
-    def keys
-      @data.keys
-    end
+    delegate :keys, to: :@data
 
     # @return [Array] All values in the data
-    def values
-      @data.values
-    end
+    delegate :values, to: :@data
 
     # Check if a key exists
     # @param key [String, Symbol]

@@ -10,5 +10,6 @@ gem "rake", "~> 13.0"
 
 # Test dependencies
 gem "minitest", "~> 5.0"
-gem "activesupport"
 gem "mocha"
+gem "rack"
+gem "webmock"

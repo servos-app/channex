@@ -45,7 +45,7 @@ class Channex::Resources::PhotosTest < ActiveSupport::TestCase
       description: "Hotel Lobby"
     }
 
-    @client.expects(:post).with("/photos", body: {photo: attributes}).returns(response)
+    @client.expects(:post).with("/photos", body: {"photo" => attributes}).returns(response)
 
     @photos.create(attributes)
   end
@@ -54,7 +54,7 @@ class Channex::Resources::PhotosTest < ActiveSupport::TestCase
     response = mock("response")
     attributes = {position: 1, description: "Updated description"}
 
-    @client.expects(:put).with("/photos/photo-123", body: {photo: attributes}).returns(response)
+    @client.expects(:put).with("/photos/photo-123", body: {"photo" => attributes}).returns(response)
 
     @photos.update("photo-123", attributes)
   end

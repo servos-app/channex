@@ -61,10 +61,25 @@ class Channex::Resources::GroupUsersTest < ActiveSupport::TestCase
     )
   end
 
+  test "create invites the user, the only way Channex adds one to a group" do
+    response = mock("response")
+    attributes = {group_id: "group-123", user_email: "user@example.com", role: "user"}
+
+    @client.expects(:post).with("/group_users", body: {invite: attributes.merge(overrides: {})}).returns(response)
+
+    @group_users.create(attributes)
+  end
+
+  test "create without an email fails before calling Channex" do
+    @client.expects(:post).never
+
+    assert_raises(ArgumentError) { @group_users.create(group_id: "group-123", role: "user") }
+  end
+
   test "update wraps attributes in group_user key" do
     response = mock("response")
 
-    @client.expects(:put).with("/group_users/gu-123", body: {group_user: {role: "owner"}}).returns(response)
+    @client.expects(:put).with("/group_users/gu-123", body: {"group_user" => {role: "owner"}}).returns(response)
 
     @group_users.update("gu-123", role: "owner")
   end

@@ -20,25 +20,14 @@ module Channex
     # @see https://docs.channex.io/api-v.1-documentation/taxes-and-tax-sets
     #
     class TaxSets < Resource
-      # List tax sets with optional filtering
-      #
-      # @param property_id [String] Filter by property UUID
-      # @param options [Hash] Additional options
-      # @return [Response]
-      def list(property_id: nil, **options)
-        filter = options.delete(:filter) || {}
-        filter[:property_id] = property_id if property_id
-        super(filter: filter, **options)
-      end
-
       protected
 
       def resource_path
         "/tax_sets"
       end
 
-      def resource_name
-        "tax_set"
+      def filter_keys
+        %i[property_id]
       end
     end
   end

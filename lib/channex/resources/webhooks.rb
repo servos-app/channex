@@ -57,41 +57,6 @@ module Channex
         message
       ].freeze
 
-      # List webhooks with optional filtering
-      #
-      # @param property_id [String] Filter by property UUID
-      # @param options [Hash] Additional options
-      # @return [Response]
-      def list(property_id: nil, **options)
-        filter = options.delete(:filter) || {}
-        filter[:property_id] = property_id if property_id
-        super(filter: filter, **options)
-      end
-
-      # Create a new webhook
-      #
-      # @param attributes [Hash] Webhook attributes
-      #   - property_id [String] Property UUID (required)
-      #   - callback_url [String] URL to receive webhook POST requests (required)
-      #   - event_mask [String] Event type or "*" for all (required)
-      #   - is_active [Boolean] Whether webhook is active (default: false)
-      #   - send_data [Boolean] Include payload data in callback (default: false)
-      #   - headers [Hash] Custom headers for authentication (optional)
-      #   - request_params [Hash] GET arguments for the callback URL (optional)
-      # @return [Response]
-      def create(attributes)
-        client.post(resource_path, body: {webhook: attributes})
-      end
-
-      # Update an existing webhook
-      #
-      # @param id [String] Webhook UUID
-      # @param attributes [Hash] Webhook attributes to update
-      # @return [Response]
-      def update(id, attributes)
-        client.put("#{resource_path}/#{id}", body: {webhook: attributes})
-      end
-
       # Test a webhook endpoint without saving
       #
       # @param attributes [Hash] Webhook attributes to test
@@ -112,6 +77,10 @@ module Channex
 
       def resource_path
         "/webhooks"
+      end
+
+      def filter_keys
+        %i[property_id]
       end
     end
   end

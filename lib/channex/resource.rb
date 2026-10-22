@@ -18,19 +18,12 @@ module Channex
     # @param limit [Integer] Number of results per page (max 100)
     # @param filter [Hash] Filter parameters
     # @param order [Hash] Ordering parameters (e.g., { inserted_at: :asc })
+    # @param params [Hash] Keywords named by #filter_keys join the filter; the rest are sent as top-level params
     # @return [Response]
     def list(page: nil, limit: nil, filter: {}, order: {}, **params)
-      query_params = params.dup
-
-      pagination = {}
-      pagination[:page] = page if page
-      pagination[:limit] = limit if limit
-      query_params[:pagination] = pagination unless pagination.empty?
-
-      query_params[:filter] = filter unless filter.empty?
-      query_params[:order] = order unless order.empty?
-
-      client.get(resource_path, params: query_params)
+      named_filters = params.extract!(*filter_keys).compact
+      filter = filter.merge(named_filters)
+      client.get(resource_path, params: query_params(page:, limit:, filter:, order:, **params))
     end
 
     # Retrieve all resources using automatic pagination
@@ -96,6 +89,25 @@ module Channex
 
     protected
 
+    # Build the query string Channex expects: pagination, filter and order are
+    # each nested one level deep (e.g. `pagination[page]=2`). Shared with
+    # resources whose collections hang off another resource's path.
+    #
+    # @return [Hash]
+    def query_params(page: nil, limit: nil, filter: {}, order: {}, **params)
+      query = params.dup
+
+      pagination = {}
+      pagination[:page] = page if page
+      pagination[:limit] = limit if limit
+      query[:pagination] = pagination unless pagination.empty?
+
+      query[:filter] = filter unless filter.empty?
+      query[:order] = order unless order.empty?
+
+      query
+    end
+
     # Override in subclasses to define the API path
     def resource_path
       raise NotImplementedError, "Subclass must implement #resource_path"
@@ -106,9 +118,13 @@ module Channex
       {resource_name => attributes}
     end
 
-    # Override to change the resource wrapper name
     def resource_name
-      self.class.name.split("::").last.downcase.chomp("s")
+      self.class.name.demodulize.underscore.singularize
+    end
+
+    # Override to name the keywords #list sends to Channex as filters
+    def filter_keys
+      []
     end
   end
 end

@@ -6,13 +6,10 @@ bookings, webhooks, and more.
 
 ## Installation
 
-This is a private gem hosted on GitHub Packages. Configure the source, then add
-it to your `Gemfile`:
+The gem isn't published to a registry. Add it to your `Gemfile` from GitHub:
 
 ```ruby
-source "https://rubygems.pkg.github.com/servos-app" do
-  gem "channex"
-end
+gem "channex", github: "servos-app/channex"
 ```
 
 Then:
@@ -66,7 +63,7 @@ client.properties.delete("property-uuid")
 Available resources: `properties`, `room_types`, `rate_plans`, `availability`,
 `restrictions`, `bookings`, `booking_revisions`, `channels`, `webhooks`,
 `taxes`, `tax_sets`, `photos`, `groups`, `group_users`, `property_users`,
-`facilities`, `messages`, `message_threads`, `hotel_policies`,
+`facilities`, `messages`, `message_threads`, `attachments`, `hotel_policies`,
 `availability_rules`.
 
 ### Pagination
@@ -152,6 +149,56 @@ end
 ```
 
 Raw hash access is available via `response.data` if you prefer.
+
+### Guest messages
+
+Channex unifies the guest inboxes of Booking.com, Airbnb and Expedia behind one
+API. A **message thread** is one conversation; threads are the channel-agnostic
+entry point because they also cover conversations with no booking behind them —
+an Airbnb inquiry is a thread about a stay that does not exist yet.
+
+```ruby
+threads = client.message_threads.list(property_id: "property-uuid")
+thread = Channex::Objects::MessageThread.from_resource(threads.data.first)
+
+thread.title          # => "Maldonado Roxy"
+thread.provider       # => "BookingCom"
+thread.booking_id     # => nil for an Airbnb inquiry
+thread.last_message   # => Channex::Objects::Message
+
+messages = client.message_threads.messages(thread.id, order: {inserted_at: :asc})
+messages.data.map { |node| Channex::Objects::Message.from_resource(node) }
+        .each { |message| puts "#{message.sender}: #{message.message}" }
+
+client.message_threads.send_message(thread.id, message: "Check-in is from 15:00.")
+```
+
+The same conversation is reachable from the booking it belongs to:
+
+```ruby
+client.messages.list(booking_id: "booking-uuid")
+client.messages.send_message(booking_id: "booking-uuid", message: "See you soon!")
+```
+
+Sending a file is two calls — upload, then send the returned id:
+
+```ruby
+attachment = client.attachments.create(
+  file: Base64.strict_encode64(File.binread("directions.jpeg")),
+  file_name: "directions.jpeg",
+  file_type: "image/jpeg"
+)
+
+client.message_threads.send_message(thread.id, attachment_id: attachment.data["id"])
+```
+
+Two thread actions round out the inbox: `close(id)` archives a thread, and
+`no_reply_needed(id)` tells Booking.com a guest message needs no answer so its
+response-time score stays honest.
+
+Every call here needs the Messages application installed on the property,
+otherwise Channex answers `403 Forbidden`. Bookings from an OTA without a
+messaging API answer `422 Unprocessable Entity` (`not_supported`).
 
 ### Typed objects
 

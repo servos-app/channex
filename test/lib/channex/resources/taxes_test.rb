@@ -35,7 +35,7 @@ class Channex::Resources::TaxesTest < ActiveSupport::TestCase
       is_inclusive: false
     }
 
-    @client.expects(:post).with("/taxes", body: {tax: attributes}).returns(response)
+    @client.expects(:post).with("/taxes", body: {"tax" => attributes}).returns(response)
 
     @taxes.create(attributes)
   end
@@ -43,7 +43,7 @@ class Channex::Resources::TaxesTest < ActiveSupport::TestCase
   test "update wraps attributes in tax key" do
     response = mock("response")
 
-    @client.expects(:put).with("/taxes/tax-123", body: {tax: {rate: 21.0}}).returns(response)
+    @client.expects(:put).with("/taxes/tax-123", body: {"tax" => {rate: 21.0}}).returns(response)
 
     @taxes.update("tax-123", rate: 21.0)
   end

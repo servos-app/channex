@@ -14,17 +14,6 @@ module Channex
     # @see https://docs.channex.io/api-v.1-documentation/channel-api
     #
     class Channels < Resource
-      # List channels with optional filtering
-      #
-      # @param property_id [String] Filter by property UUID
-      # @param options [Hash] Additional options
-      # @return [Response]
-      def list(property_id: nil, **options)
-        filter = options.delete(:filter) || {}
-        filter[:property_id] = property_id if property_id
-        super(filter: filter, **options)
-      end
-
       # Get list of available channel codes/types
       #
       # @return [Response]
@@ -97,6 +86,10 @@ module Channex
 
       def resource_path
         "/channels"
+      end
+
+      def filter_keys
+        %i[property_id]
       end
     end
   end
