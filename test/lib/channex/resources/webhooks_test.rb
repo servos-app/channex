@@ -39,7 +39,7 @@ class Channex::Resources::WebhooksTest < ActiveSupport::TestCase
       event_mask: "booking"
     }
 
-    @client.expects(:post).with("/webhooks", body: {webhook: attributes}).returns(response)
+    @client.expects(:post).with("/webhooks", body: {"webhook" => attributes}).returns(response)
 
     @webhooks.create(attributes)
   end
@@ -47,7 +47,7 @@ class Channex::Resources::WebhooksTest < ActiveSupport::TestCase
   test "update wraps attributes in webhook key" do
     response = mock("response")
 
-    @client.expects(:put).with("/webhooks/wh-123", body: {webhook: {callback_url: "https://new.url"}}).returns(response)
+    @client.expects(:put).with("/webhooks/wh-123", body: {"webhook" => {callback_url: "https://new.url"}}).returns(response)
 
     @webhooks.update("wh-123", callback_url: "https://new.url")
   end

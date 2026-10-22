@@ -40,59 +40,14 @@ module Channex
       # Parking reservation options
       PARKING_RESERVATIONS = %w[needed not_needed not_available].freeze
 
-      # List hotel policies with optional filtering
-      #
-      # @param property_id [String] Filter by property UUID
-      # @param options [Hash] Additional options
-      # @return [Response]
-      def list(property_id: nil, **options)
-        filter = options.delete(:filter) || {}
-        filter[:property_id] = property_id if property_id
-        super(filter: filter, **options)
-      end
-
-      # Create a new hotel policy
-      #
-      # @param attributes [Hash] Hotel policy attributes
-      #   - property_id [String] Property UUID (required)
-      #   - title [String] Policy name (required)
-      #   - currency [String] Currency code (required)
-      #   - checkin_time [String] Check-in time in HH:MM format (e.g., "14:00")
-      #   - checkout_time [String] Check-out time in HH:MM format (e.g., "11:00")
-      #   - is_adults_only [Boolean] Adults only property
-      #   - max_count_of_guests [Integer] Maximum guests allowed
-      #   - internet_access_type [String] "wifi", "wired", or "none"
-      #   - internet_access_cost [String] Cost or nil for free
-      #   - internet_access_coverage [String] Coverage area
-      #   - parking_type [String] "on_site", "off_site", or "none"
-      #   - parking_reservation [String] "needed", "not_needed", or "not_available"
-      #   - parking_is_private [Boolean] Private parking
-      #   - pets_policy [String] "allowed", "not_allowed", "by_arrangements", "pets_not_allowed_on_beds"
-      #   - pets_non_refundable_fee [String] Fee amount
-      #   - pets_refundable_deposit [String] Deposit amount
-      #   - smoking_policy [String] "no_smoking", "smoking_allowed", "designated_areas"
-      # @return [Response]
-      def create(attributes)
-        client.post(resource_path, body: {hotel_policy: attributes})
-      end
-
-      # Update a hotel policy
-      #
-      # @param id [String] Hotel Policy UUID
-      # @param attributes [Hash] Hotel policy attributes to update
-      # @return [Response]
-      def update(id, attributes)
-        client.put("#{resource_path}/#{id}", body: {hotel_policy: attributes})
-      end
-
       protected
 
       def resource_path
         "/hotel_policies"
       end
 
-      def resource_name
-        "hotel_policy"
+      def filter_keys
+        %i[property_id]
       end
     end
   end

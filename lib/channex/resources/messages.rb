@@ -1,15 +1,19 @@
 module Channex
   module Resources
-    # Messages API resource
+    # Booking Messages API resource
     #
-    # Messages represent chat communications from booking channels.
-    # Currently supports messages from Booking.com and Airbnb.
+    # The booking-scoped view of the same conversations {MessageThreads}
+    # exposes: reach a guest by the booking you already hold, without first
+    # resolving which thread it belongs to. Channex answers 422 `not_supported`
+    # for bookings from an OTA that has no messaging API.
     #
-    # @example List messages for a booking
+    # Requires the Messages application to be installed on the property.
+    #
+    # @example Read the conversation on a booking
     #   client.messages.list(booking_id: "booking-uuid")
     #
-    # @example Send a message
-    #   client.messages.create(
+    # @example Answer the guest
+    #   client.messages.send_message(
     #     booking_id: "booking-uuid",
     #     message: "Thank you for your reservation!"
     #   )
@@ -17,33 +21,43 @@ module Channex
     # @see https://docs.channex.io/api-v.1-documentation/messages-collection
     #
     class Messages < Resource
-      # List messages with optional filtering
+      # List the messages on a booking, newest first by default
       #
-      # @param booking_id [String] Filter by booking UUID
-      # @param thread_id [String] Filter by message thread UUID
-      # @param options [Hash] Additional options
+      # @param booking_id [String] Booking UUID
+      # @param options [Hash] Additional options (page, limit, filter, order)
       # @return [Response]
-      def list(booking_id: nil, thread_id: nil, **options)
-        filter = options.delete(:filter) || {}
-        filter[:booking_id] = booking_id if booking_id
-        filter[:thread_id] = thread_id if thread_id
-        super(filter: filter, **options)
+      def list(booking_id:, **options)
+        client.get(booking_path(booking_id), params: query_params(**options))
       end
 
-      # Send a message
+      # Send a message to the guest on a booking
+      #
+      # Pass `attachment_id` to send a file previously uploaded through
+      # {Attachments#create}; `message` and `attachment_id` can be combined to
+      # send a file with a caption.
       #
       # @param booking_id [String] Booking UUID
       # @param message [String] Message text
+      # @param attachment_id [String] Attachment UUID from {Attachments#create}
       # @param attributes [Hash] Additional message attributes
       # @return [Response]
-      def send_message(booking_id:, message:, **attributes)
-        create(attributes.merge(booking_id: booking_id, message: message))
+      def send_message(booking_id:, message: nil, attachment_id: nil, **attributes)
+        attributes[:message] = message if message
+        attributes[:attachment_id] = attachment_id if attachment_id
+
+        client.post(booking_path(booking_id), body: {message: attributes})
       end
 
       protected
 
+      # Messages only exist under a booking, so there is no collection of their
+      # own to retrieve, update or delete.
       def resource_path
-        "/messages"
+        raise NotImplementedError, "Messages are scoped to a booking — use #list or #send_message"
+      end
+
+      def booking_path(booking_id)
+        "/bookings/#{booking_id}/messages"
       end
     end
   end

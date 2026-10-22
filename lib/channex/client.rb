@@ -101,6 +101,10 @@ module Channex
       @message_threads ||= Resources::MessageThreads.new(self)
     end
 
+    def attachments
+      @attachments ||= Resources::Attachments.new(self)
+    end
+
     def hotel_policies
       @hotel_policies ||= Resources::HotelPolicies.new(self)
     end
@@ -186,7 +190,7 @@ module Channex
       request["Content-Type"] = "application/json"
       request["Accept"] = "application/json"
       request["user-api-key"] = api_key
-      request.body = body.to_json if body && !body.empty?
+      request.body = body.to_json if body.present?
 
       request
     end
@@ -225,7 +229,7 @@ module Channex
       when 422
         raise Errors::ValidationError.new(
           error_message,
-          errors: response.error&.dig("errors") || [],
+          errors: (response.error["details"] if response.error.is_a?(Hash)) || {},
           response: response,
           code: 422
         )

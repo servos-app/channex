@@ -25,9 +25,12 @@ module Channex
     class ValidationError < Error
       attr_reader :errors
 
-      def initialize(message = nil, errors: [], **kwargs)
+      # Channex details the rejected fields by name. Only the names join the message, which reaches error
+      # tracking: the details can echo the values sent.
+      def initialize(message = nil, errors: {}, **kwargs)
         @errors = errors
-        super(message, **kwargs)
+        fields = errors.is_a?(Hash) ? errors.keys : []
+        super(fields.any? ? "#{message}: #{fields.join(", ")}" : message, **kwargs)
       end
     end
 
@@ -52,5 +55,8 @@ module Channex
 
     # Raised for invalid configuration
     class ConfigurationError < Error; end
+
+    # Errors that repeating the same request can't fix.
+    PERMANENT = [AuthenticationError, ForbiddenError, NotFoundError, ValidationError].freeze
   end
 end

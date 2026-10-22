@@ -21,17 +21,6 @@ module Channex
     class GroupUsers < Resource
       ROLES = %w[owner user].freeze
 
-      # List group users with optional filtering
-      #
-      # @param group_id [String] Filter by group UUID
-      # @param options [Hash] Additional options
-      # @return [Response]
-      def list(group_id: nil, **options)
-        filter = options.delete(:filter) || {}
-        filter[:group_id] = group_id if group_id
-        super(filter: filter, **options)
-      end
-
       # Invite a user to a group
       #
       # If the user is not registered, Channex will create their account
@@ -60,13 +49,9 @@ module Channex
         })
       end
 
-      # Update a group user's role or permissions
-      #
-      # @param id [String] Group User UUID
-      # @param attributes [Hash] Attributes to update (role, overrides)
-      # @return [Response]
-      def update(id, attributes)
-        client.put("#{resource_path}/#{id}", body: {group_user: attributes})
+      # @see #invite
+      def create(attributes)
+        invite(**attributes)
       end
 
       # Revoke a user's access to a group
@@ -83,8 +68,8 @@ module Channex
         "/group_users"
       end
 
-      def resource_name
-        "group_user"
+      def filter_keys
+        %i[group_id]
       end
     end
   end

@@ -27,36 +27,13 @@ module Channex
     # @see https://docs.channex.io/api-v.1-documentation/booking-crs-api
     #
     class Bookings < Resource
-      # List bookings with optional filtering
+      # List bookings; date_from and date_to bound the arrival date
       #
-      # @param property_id [String] Filter by property UUID
-      # @param channel_id [String] Filter by channel UUID
-      # @param status [String] Filter by status (new, modified, cancelled)
-      # @param date_from [String] Filter by arrival date from
-      # @param date_to [String] Filter by arrival date to
-      # @param options [Hash] Additional options
       # @return [Response]
-      def list(property_id: nil, channel_id: nil, status: nil, date_from: nil, date_to: nil, **options)
-        filter = options.delete(:filter) || {}
-        filter[:property_id] = property_id if property_id
-        filter[:channel_id] = channel_id if channel_id
-        filter[:status] = status if status
-
-        if date_from || date_to
-          filter[:arrival_date] = {}
-          filter[:arrival_date][:gte] = date_from if date_from
-          filter[:arrival_date][:lte] = date_to if date_to
-        end
-
-        super(filter: filter, **options)
-      end
-
-      # Create a new booking (requires Booking CRS App installed on property)
-      #
-      # @param attributes [Hash] Booking attributes
-      # @return [Response]
-      def create(attributes)
-        client.post(resource_path, body: {booking: attributes})
+      def list(date_from: nil, date_to: nil, filter: {}, **options)
+        arrival_date = {gte: date_from, lte: date_to}.compact
+        filter = filter.merge(arrival_date:) if arrival_date.any?
+        super(filter:, **options)
       end
 
       # Revise (modify) an existing booking
@@ -93,6 +70,10 @@ module Channex
 
       def resource_path
         "/bookings"
+      end
+
+      def filter_keys
+        %i[property_id channel_id status]
       end
     end
   end

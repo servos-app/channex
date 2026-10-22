@@ -20,17 +20,6 @@ module Channex
     # @see https://docs.channex.io/api-v.1-documentation/hotels-collection
     #
     class Properties < Resource
-      # List properties with optional filtering
-      #
-      # @param group_id [String] Filter by group UUID
-      # @param options [Hash] Additional options
-      # @return [Response]
-      def list(group_id: nil, **options)
-        filter = options.delete(:filter) || {}
-        filter[:group_id] = group_id if group_id
-        super(filter: filter, **options)
-      end
-
       # Retrieve property health status
       #
       # @param id [String] Property UUID
@@ -43,6 +32,10 @@ module Channex
 
       def resource_path
         "/properties"
+      end
+
+      def filter_keys
+        %i[group_id]
       end
     end
   end

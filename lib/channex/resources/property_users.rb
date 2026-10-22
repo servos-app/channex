@@ -18,25 +18,14 @@ module Channex
     # @see https://docs.channex.io/api-v.1-documentation/property-users-collection
     #
     class PropertyUsers < Resource
-      # List property users with optional filtering
-      #
-      # @param property_id [String] Filter by property UUID
-      # @param options [Hash] Additional options
-      # @return [Response]
-      def list(property_id: nil, **options)
-        filter = options.delete(:filter) || {}
-        filter[:property_id] = property_id if property_id
-        super(filter: filter, **options)
-      end
-
       protected
 
       def resource_path
         "/property_users"
       end
 
-      def resource_name
-        "property_user"
+      def filter_keys
+        %i[property_id]
       end
     end
   end

@@ -71,15 +71,11 @@ module Channex
         response
       end
 
-      # List booking revisions with optional filtering
+      # List booking revisions, filtered by booking_id
       #
-      # @param booking_id [String] Filter by booking UUID
-      # @param options [Hash] Additional options
-      # @return [Response]
-      def list(booking_id: nil, **options)
-        filter = options.delete(:filter) || {}
-        filter[:booking_id] = booking_id if booking_id
-        response = super(filter: filter, **options)
+      # @return [Response] Response with #objects method for typed access
+      def list(**)
+        response = super
         add_objects_wrapper(response)
         response
       end
@@ -90,8 +86,8 @@ module Channex
         "/booking_revisions"
       end
 
-      def resource_name
-        "booking_revision"
+      def filter_keys
+        %i[booking_id]
       end
 
       private

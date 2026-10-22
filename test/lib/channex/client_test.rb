@@ -72,6 +72,7 @@ class Channex::ClientTest < ActiveSupport::TestCase
     assert_same client.facilities, client.facilities
     assert_same client.messages, client.messages
     assert_same client.message_threads, client.message_threads
+    assert_same client.attachments, client.attachments
     assert_same client.hotel_policies, client.hotel_policies
     assert_same client.availability_rules, client.availability_rules
   end
@@ -97,6 +98,7 @@ class Channex::ClientTest < ActiveSupport::TestCase
     assert_instance_of Channex::Resources::Facilities, client.facilities
     assert_instance_of Channex::Resources::Messages, client.messages
     assert_instance_of Channex::Resources::MessageThreads, client.message_threads
+    assert_instance_of Channex::Resources::Attachments, client.attachments
     assert_instance_of Channex::Resources::HotelPolicies, client.hotel_policies
     assert_instance_of Channex::Resources::AvailabilityRules, client.availability_rules
   end
@@ -396,6 +398,25 @@ class Channex::ClientTest < ActiveSupport::TestCase
       client.post("/properties", body: {})
     end
     assert_includes error.message, "Property ID is required"
+  end
+
+  test "names the fields Channex rejected, never the values it echoes" do
+    client = Channex::Client.new(api_key: "test-key", environment: :staging)
+
+    http_mock = mock("http")
+    http_mock.stubs(:use_ssl=)
+    http_mock.stubs(:read_timeout=)
+    http_mock.stubs(:open_timeout=)
+
+    body = {errors: {code: "validation_error", title: "Validation Error",
+                     details: {count_of_rooms: ["must be greater than 0, got 0"], title: ["is taken: Crew"]}}}
+    http_mock.stubs(:request).returns(mock_http_response(422, body.to_json))
+    Net::HTTP.stubs(:new).returns(http_mock)
+
+    error = assert_raises(Channex::Errors::ValidationError) { client.post("/room_types", body: {}) }
+
+    assert_equal "Validation Error: count_of_rooms, title", error.message
+    assert_equal %w[count_of_rooms title], error.errors.map(&:first)
   end
 
   private
