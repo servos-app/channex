@@ -6,13 +6,10 @@ bookings, webhooks, and more.
 
 ## Installation
 
-This is a private gem hosted on GitHub Packages. Configure the source, then add
-it to your `Gemfile`:
+The gem isn't published to a registry. Add it to your `Gemfile` from GitHub:
 
 ```ruby
-source "https://rubygems.pkg.github.com/servos-app" do
-  gem "channex"
-end
+gem "channex", github: "servos-app/channex"
 ```
 
 Then:
