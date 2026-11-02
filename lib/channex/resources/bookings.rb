@@ -50,20 +50,12 @@ module Channex
         )
       end
 
-      # Cancel a booking
+      # Cancel a booking, including one that came from an OTA (requires Booking CRS App)
       #
-      # @param reservation_id [String] The reservation ID
+      # @param booking_id [String] The booking UUID
       # @return [Response]
-      def cancel(reservation_id)
-        client.post(
-          "#{resource_path}/revise",
-          body: {
-            booking: {
-              reservation_id: reservation_id,
-              status: "cancelled"
-            }
-          }
-        )
+      def cancel(booking_id)
+        update(booking_id, status: "cancelled")
       end
 
       protected
