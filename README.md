@@ -63,7 +63,7 @@ client.properties.delete("property-uuid")
 Available resources: `properties`, `room_types`, `rate_plans`, `availability`,
 `restrictions`, `bookings`, `booking_revisions`, `channels`, `webhooks`,
 `taxes`, `tax_sets`, `photos`, `groups`, `group_users`, `property_users`,
-`facilities`, `messages`, `message_threads`, `attachments`, `hotel_policies`,
+`facilities`, `messages`, `message_threads`, `reviews`, `attachments`, `hotel_policies`,
 `availability_rules`.
 
 ### Pagination
@@ -199,6 +199,25 @@ response-time score stays honest.
 Every call here needs the Messages application installed on the property,
 otherwise Channex answers `403 Forbidden`. Bookings from an OTA without a
 messaging API answer `422 Unprocessable Entity` (`not_supported`).
+
+### Guest reviews
+
+Reviews from Booking.com, Airbnb and Expedia come through the same Messages &
+Reviews application, so they answer `403 Forbidden` without it too. Scores are
+out of 10 whatever the OTA rates on, and categories keep the OTA's own names.
+
+```ruby
+reviews = client.reviews.list(property_id: "property-uuid")
+review = Channex::Objects::Review.from_resource(reviews.data.first)
+
+review.ota            # => "BookingCom"
+review.overall_score  # => 9.0
+review.scores         # => [{"category" => "clean", "score" => 10}, ...]
+review.booking_id     # => the Channex booking the review is about
+review.replied?       # => false
+
+client.reviews.reply(review.id, reply: "Thank you for staying with us.")
+```
 
 ### Typed objects
 

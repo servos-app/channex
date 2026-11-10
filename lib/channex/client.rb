@@ -101,6 +101,10 @@ module Channex
       @message_threads ||= Resources::MessageThreads.new(self)
     end
 
+    def reviews
+      @reviews ||= Resources::Reviews.new(self)
+    end
+
     def attachments
       @attachments ||= Resources::Attachments.new(self)
     end
