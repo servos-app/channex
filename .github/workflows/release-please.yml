@@ -42,7 +42,21 @@ jobs:
 
       - run: bundle exec rake test
 
-      - uses: rubygems/configure-rubygems-credentials@v1.0.0
+      # Exchanged by hand because no release of the RubyGems actions passes
+      # `owner` yet, and RubyGems creates a new gem through trusted publishing
+      # only for the account the workflow names.
+      - name: Exchange the OIDC token for a RubyGems API key
+        env:
+          OWNER: ${{ vars.RUBYGEMS_OWNER_ID }}
+        run: |
+          test -n "$OWNER" || { echo "Set the RUBYGEMS_OWNER_ID repository variable" >&2; exit 1; }
+          jwt=$(curl -sS --fail-with-body -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=rubygems.org" | jq -r .value)
+          key=$(curl -sS --fail-with-body -X POST https://rubygems.org/api/v1/oidc/trusted_publisher/exchange_token \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n --arg jwt "$jwt" --arg owner "$OWNER" '{jwt: $jwt, owner: $owner}')" | jq -r .rubygems_api_key)
+          echo "::add-mask::$key"
+          echo "GEM_HOST_API_KEY=$key" >> "$GITHUB_ENV"
 
       - run: gem build channex.gemspec
 
