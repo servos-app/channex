@@ -15,6 +15,7 @@ class FakeChannex
     "groups" => "group",
     "bookings" => "booking",
     "message_threads" => "message_thread",
+    "reviews" => "review",
     "booking_revisions" => "booking_revision"
   }.freeze
   ARI = %w[availability restrictions].freeze

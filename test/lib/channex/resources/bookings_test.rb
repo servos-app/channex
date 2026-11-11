@@ -25,4 +25,12 @@ class Channex::Resources::BookingsTest < ActiveSupport::TestCase
 
     assert_equal({"status" => "new", "channel_id" => "chan-1"}, @channex.sent(:get, "/bookings").sole.params["filter"])
   end
+
+  test "cancel updates the booking's status to cancelled" do
+    @channex.add("bookings", "booking-1", status: "new")
+
+    @bookings.cancel("booking-1")
+
+    assert_equal({"booking" => {"status" => "cancelled"}}, @channex.sent(:put, "/bookings/booking-1").sole.body)
+  end
 end
