@@ -11,9 +11,39 @@ permissions:
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
     steps:
-      # Opens/updates a release PR from conventional commits; on merge it
-      # tags vX.Y.Z, which triggers .github/workflows/release.yml to publish.
+      # Opens/updates a release PR from conventional commits and tags vX.Y.Z
+      # when it merges. A tag pushed with GITHUB_TOKEN starts no other
+      # workflow, so publishing runs here rather than on the tag.
       - uses: googleapis/release-please-action@v4
+        id: release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+
+  publish:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created }}
+    runs-on: ubuntu-latest
+    environment: rubygems
+    permissions:
+      contents: read
+      # RubyGems trusted publishing exchanges this OIDC token for a
+      # short-lived API key, so the repository holds no RubyGems secret.
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+
+      - run: bundle exec rake test
+
+      - uses: rubygems/configure-rubygems-credentials@v1.0.0
+
+      - run: gem build channex.gemspec
+
+      - run: gem push channex-*.gem

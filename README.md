@@ -6,10 +6,10 @@ bookings, webhooks, and more.
 
 ## Installation
 
-The gem isn't published to a registry. Add it to your `Gemfile` from GitHub:
+Add it to your `Gemfile`:
 
 ```ruby
-gem "channex", github: "servos-app/channex"
+gem "channex"
 ```
 
 Then:
